@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>ActionBoyz Data</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.0/axios.min.js"></script>
+
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    main{
+      max-width: 1400px;
+      margin: 0 auto;
+      overflow: hidden;
+      padding: 2rem;
+    }
+    #content{
+      display: grid;
+      grid-gap: 2rem;
+      grid-template-columns: auto 60%;
+    }
+    #search {
+      border: solid 2px black;
+      width: 70%;
+      padding: .5rem;
+      font-size:  1rem;
+      margin-bottom: 1rem;
+    }
+
+    button {
+      background: white;
+      border: none;
+      font-size: 1rem;
+      padding: .5rem;
+      transition: all .4s ease;
+    }
+    button:hover{
+      background: gold;
+      cursor: pointer;
+    }
+    .filter {
+      font-size: 1rem;
+      margin: 0 .5rem .5rem 0;
+    }
+    .reset {
+      background: white;
+      border: solid 2px black;
+      margin: 2rem 0;
+      padding: .5rem 1rem;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr;
+      margin-bottom: 1rem;
+    }
+    .hero h1, .hero-image {
+      grid-row: 1;
+      grid-column: 1;
+    }
+    .hero-image {
+      max-width: 100%;
+    }
+    ul {
+      display: flex;
+      flex-wrap: wrap;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      text-shadow: 4px 4px red;
+      font-size: 4rem;
+      margin: 0 0 1rem;;
+      line-height: 1;
+    }
+    h2 {
+      margin: 0;
+    }
+    h2.result_count {
+      background: white;
+      padding: .5rem;
+      margin-bottom:  2rem;
+      width: fit-content;
+      width: -moz-fit-content;
+    }
+    .episode {
+      margin-bottom: 2rem;
+    }
+    .episode > * {
+      margin: 0;
+      padding: .25rem .5rem;
+      background: white;
+      width: fit-content;
+      width: -moz-fit-content;
+    }
+    img{
+      position: fixed;
+      z-index: -1;
+      max-width: 700px;
+      display: block;
+    }
+    img:nth-of-type(1){
+      top: 30%;
+      left: 0;
+    }
+    img:nth-of-type(2){
+      top: 0;
+      right: 0;
+    }
+    img:nth-of-type(3){
+      top: 75%;
+      right: 20%;
+    }
+    aside h2, aside h3 {
+      margin: 0;
+      background: white;
+      width: fit-content;
+      width: -moz-fit-content;
+      padding: .25rem .5rem;
+    }
+    aside h3 {
+      margin-bottom: .5rem;
+    }
+    aside > div {
+      margin-bottom: 2rem;
+      padding: .5rem .5rem 0;
+      border: solid 2px black;
+    }
+    button[data=""],
+    .bit[data=""] {
+      display: none;
+    }
+    .movie__tags{
+      display: flex;
+      flex-wrap: wrap;
+    }
+    .movie__tags > * {
+      display: block;
+      margin-right: .5rem;
+    }
+    span.bit {
+      background:  gray;
+      border-radius:  6px;
+      color:  white;
+      display:  block;
+      font-size: .8rem;
+      margin: 0 .35rem .2rem 0;
+      padding:  .25rem;
+    }
+    .episode__bits {
+      display:  flex;
+      flex-wrap:  wrap;
+    }
+    #movies, #yearCount{display: none;}
+
+  </style>
+</head>
+
+<body>
+  <main>
+
+
+      <div id="abz">
+      </div>
+
+      <header>
+        <h1>&#9760; Action Boyz &#9760;</h1>
+      </header>
+
+      <div>
+        <input
+          id="search"
+          v-on:input="filterEpisodes"
+          type="search"
+          placeholder="Search for stuff, ... 'n shit"
+          class="form-control bg-none border-1">
+      </div>
+
+      <div id="content" class="">
+        <aside>
+
+          <h2>Filters</h2>
+
+          <ul id="clicked">
+            <li class="menu-item" v-for="clicked in clicked">
+              <button class="filter"  v-on:click="removeFilter" :data="clicked">{{ clicked }}</button>
+            </li>
+          </ul>
+
+          <button id="reset-filter" class="reset" v-on:click="reset">&#9746; Reset Filters</button>
+
+          <div id="bots">
+            <h3>Stanger Bot or Gorgon?</h3>
+            <div class="container">
+              <button class="filter" v-for="bot in bots" v-on:click="selectBot" :data="bot">
+                {{ bot }}
+              </button>
+            </div>
+          </div>
+
+          <div id="movies">
+            <!-- <div>
+              Movies
+            </div>
+            <ul>
+              <li class="menu-item" v-for="movie in movies" v-on:click="selectMovie" :data="movie">
+                {{ movie }}
+              </li>
+            </ul> -->
+          </div>
+
+          <div id="yearCount">
+          </div>
+
+          <div id="years">
+            <h3>Movie Year</h3>
+            <ul>
+              <li class="menu-item" v-for="year in years">
+                <button class="filter"  v-on:click="selectYear" :data="year">{{ year }}</button>
+              </li>
+            </ul>
+            <!-- <select name="choose_year" id="choose_movie_year">
+              <option v-for="year in years" v-bind:value="year">{{ year }}</option>
+            </select> -->
+          </div>
+
+          <div id="ratings">
+            <h3>Rating system</h3>
+            <ul>
+              <li class="menu-item" v-for="rating in ratings" >
+                <button class="filter" v-on:click="selectRating" :data="rating" >{{ rating }}</button>
+              </li>
+            </ul>
+          </div>
+
+          <div id="bits">
+            <h3>Bits</h3>
+            <ul>
+              <li class="menu-item" v-for="bit in bits" >
+                <button class="filter" v-on:click="selectBit" :data="bit" >{{ bit }}</button>
+              </li>
+            </ul>
+          </div>
+
+          <div id="stories">
+            <h3>Stories</h3>
+            <ul>
+              <li class="menu-item" v-for="story in stories" >
+                <button class="filter" v-on:click="selectStory" :data="story" >{{ story }}</button>
+              </li>
+            </ul>
+          </div>
+
+          <div id="themes">
+            <h3>Theme month</h3>
+            <ul>
+              <li class="menu-item" v-for="theme in themes" >
+                <button class="filter" v-on:click="selectTheme" :data="theme" >{{ theme }}</button>
+              </li>
+            </ul>
+          </div>
+
+          <div id="podcasts">
+            <h3>Podcast</h3>
+            <ul>
+              <li class="menu-item" v-for="podcast in podcasts">
+                <button class="filter" v-on:click="selectPodcast" :data="podcast" >{{ podcast }}</button>
+              </li>
+            </ul>
+          </div>
+
+          <div id="keywords">
+            <h3>Keywords</h3>
+            <ul>
+              <li class="menu-item" v-for="keyword in keywords">
+                <button class="filter" v-on:click="selectKeyword" :data="keyword">{{ keyword }}</button>
+              </li>
+            </ul>
+          </div>
+
+        </aside><!-- sidebar -->
+
+        <div id="episodes">
+          <h2 class="result_count">Episodes: {{episodes.length}}</h2>
+          <article v-for="episode in episodes" class="episode">
+            <h3><a :href="episode.episode_url" target="_blank" >{{ episode.episode_title }}</a></h3>
+            <p>{{ episode.episode_desc }}</p>
+            <div class="episode__bits">
+              <span v-for="bit in episode.bits" class="bit" :data="bit">
+                {{ bit }}
+              </span>
+            </div>
+            <div class="episode__bits">
+              <span v-for="story in episode.stories" class="story" :data="story">
+                {{ story }}
+              </span>
+            </div>
+            <div class="movie__tags">
+              <div class="movie__rating">&#10032; 5 {{episode.rating }} &#10032;</div>
+              <div class="stanger_bot_gorgon">&#9762; {{ episode.bot_variant }} &#9762;</div>
+              <a :href="episode.sauna_url" class="" target="_blank">&#9832; Sauna talk &#9832;</a>
+              <a :href="episode.watch" class="" target="_blank">&#10154; Where to watch &#10154;</a>
+            </div>
+            <div>{{ episode.podcast }}, {{ episode.date }}</div>
+
+              <!-- <span class="source" v-if="episode.imdb_url != ''">()</span> -->
+            <!-- <div class="tag-container"> -->
+              <!-- <span v-for="tag in quote.tags" class="podcast"> -->
+              <!-- <span v-for="podcast in episode.podcasts" class="podcast">
+                {{ podcast }}
+              </span> -->
+            <!-- </div> -->
+          </article>
+        </div> <!-- episodes -->
+
+      </div>
+    </main>
+
+  <script>
+    var menu = document.querySelector('.menu');
+
+    var gsheet_url = "https://spreadsheets.google.com/feeds/list/1O1T89pzspOe6aY-kOZMMurq_LQBT6rdUIJeKGx6lbWs/1/public/values?alt=json"
+    var gsheet_url_2 = "https://spreadsheets.google.com/feeds/list/1O1T89pzspOe6aY-kOZMMurq_LQBT6rdUIJeKGx6lbWs/2/public/values?alt=json"
+
+    // Global variables to hold the data from the spreadsheet
+    var clickedList = []; //send filter values here
+    var episodeList = [];
+    var movieList = [];
+    var podcastList = [];
+    var botList = [];
+    var bitList = []; // bits
+    var storyList = []; // stories
+    var ratingList = [];
+    var themeList = [];
+    var yearList = [];
+    var actorsList = [];
+    var yearArray = new Array();
+    var actorsArray = new Array();
+    var yearObj = [];
+    var keywordList = [];
+
+    // Load data when the page is ready
+    var app = new Vue({
+      el: '#abz',
+      data () {
+        return {
+          info: null
+        }
+      },
+      mounted () {
+        axios
+          .get(gsheet_url_2)
+          .then(response => (
+          parseData(response.data.feed.entry)
+        ))
+      },
+      methods:{
+    // grab item text and push it into the search field on click
+        button_search: function(thing){
+          this.search = thing;
+        },
+      },
+    });
+
+    // Search bar
+      var search = new Vue({
+        el: '#search',
+        methods: {
+          filterEpisodes: function(event) {
+            var query = event.target.value;
+
+            // Reset filter if query is empty string
+            if (query.length == 0) {
+              episodes.episodes = episodeList;
+            }
+
+            // Do nothing if query is too short
+            if (query.length < 3) return;
+
+            var filtered = [];
+            query = query.toLowerCase();
+            console.log(query);
+
+            // Search in quote, author and source
+            episodeList.forEach(function(value) {
+              var episode = value.episode.toLowerCase();
+              var movie = value.movie.toLowerCase();
+              var bot = value.bot.toLowerCase();
+              if (
+                (episode.search(query) >= 0) ||
+                (movie.search(query) >= 0) ||
+                (bot.search(query) >= 0))
+                {
+                  filtered.push(value);
+                }
+            });
+            episodes.episodes = filtered;
+          }
+        }
+      });
+
+      // var quotes = new Vue({
+      var episodes = new Vue({
+        el: '#episodes', //was #quotes
+        data: {
+          episodes: episodeList
+        }
+      });
+
+      var clicked = new Vue({
+        el: '#clicked',
+        data: {
+          clicked: clickedList
+        },
+        methods: {
+          removeFilter: function(event) {
+            var item = event.target.getAttribute('data');
+            console.log("clicked list: " + clicked.clicked);
+            const index = clicked.clicked.indexOf(item);
+            if (index > -1) { clicked.clicked.splice(index, 1) }
+          }
+        }
+      });
+
+      // var authors = new Vue({
+      var movies = new Vue({
+        el: '#movies',
+        data: {
+          movies: movieList
+        },
+        methods: {
+          selectMovie: function(event) {
+            var selected = [];
+            var movie = event.target.getAttribute('data');
+            episodeList.forEach(function(value) {
+              if (value.movie == movie) {
+                selected.push(value);
+              }
+            });
+            episodes.episodes = selected;
+          }
+        }
+      });
+
+      var bits = new Vue({
+        el: '#bits',
+        data: {
+          bits: bitList
+        },
+        methods: {
+          selectBit: function(event) {
+            var selected = [];
+            var bit = event.target.getAttribute('data');
+            episodeList.forEach(function(value) {
+              if (value.bits.includes(bit)) {
+                selected.push(value);
+              }
+            });
+            episodes.episodes = selected;
+          }
+        }
+      });
+
+      var stories = new Vue({
+        el: '#stories',
+        data: {
+          stories: storyList
+        },
+        methods: {
+          selectStory: function(event) {
+            var selected = [];
+            var story = event.target.getAttribute('data');
+            episodeList.forEach(function(value) {
+              if (value.stories.includes(story)) {
+                selected.push(value);
+              }
+            });
+            episodes.episodes = selected;
+          }
+        }
+      });
+
+      var keywords = new Vue({
+        el: '#keywords',
+        data: {
+          keywords: keywordList
+        },
+        methods: {
+          selectKeyword: function(event) {
+            var selected = [];
+            var keyword = event.target.getAttribute('data');
+            episodeList.forEach(function(value) {
+              if (value.episode == keyword) {
+                selected.push(value);
+              }
+            });
+            episodes.episodes = selected;
+          }
+        }
+      });
+
+      var themes = new Vue({
+        el: '#themes',
+        data: {
+          themes: themeList
+        },
+        methods: {
+          selectTheme: function(event) {
+            var selected = [];
+            var theme = event.target.getAttribute('data');
+            episodeList.forEach(function(value) {
+              if (value.theme == theme) {
+                selected.push(value);
+              }
+            });
+            episodes.episodes = selected;
+          }
+        }
+      });
+
+      var ratings = new Vue({
+        el: '#ratings',
+        data: {
+          ratings: ratingList
+        },
+        methods: {
+          selectRating: function(event) {
+            var selected = [];
+            var rating = event.target.getAttribute('data');
+            episodeList.forEach(function(value) {
+              if (value.rating == rating) {
+                selected.push(value);
+              }
+            });
+            episodes.episodes = selected;
+          }
+        }
+      });
+
+      var yearCount = new Vue({
+        el: '#yearCount',
+        data: {
+          ratings: yearArray
+        },
+        methods: {
+          selectRating: function(event) {
+            var selected = [];
+            var rating = event.target.getAttribute('data');
+            episodeList.forEach(function(value) {
+              if (value.rating == rating) {
+                selected.push(value);
+              }
+            });
+            episodes.episodes = selected;
+          }
+        }
+      });
+
+      var bots = new Vue({
+        el: '#bots',
+        data: {
+          bots: botList
+        },
+        methods: {
+          selectBot: function(event) {
+            var selected = [];
+            var bot = event.target.getAttribute('data');
+            clickedList.push(bot);
+            episodeList.forEach(function(value) {
+              if (value.bot == bot) {
+                selected.push(value);
+              }
+            });
+            episodes.episodes = selected;
+          }
+        }
+      });
+
+      var years = new Vue({
+        el: '#years',
+        data: {
+          years: yearList
+        },
+        methods: {
+          selectYear: function(event) {
+            var selected = [];
+            var year = event.target.getAttribute('data');
+            episodeList.forEach(function(value) {
+              if (value.year == year) {
+                selected.push(value);
+              }
+            });
+            episodes.episodes = selected;
+          }
+        }
+      });
+
+      var resetFilter = new Vue({
+        el: '#reset-filter',
+        methods: {
+          reset: function(event) {
+            episodes.episodes = episodeList;
+          }
+        }
+      });
+
+      var podcasts = new Vue({
+        el: '#podcasts',
+        data: {
+          podcasts: podcastList
+        },
+        methods: {
+          selectPodcast: function(event) {
+            var selected = [];
+            var podcast = event.target.getAttribute('data');
+            episodeList.forEach(function(value) {
+              if (value.podcast == podcast) {
+                selected.push(value);
+              }
+            });
+            episodes.episodes = selected;
+          }
+        }
+      });
+
+      function parseData(entries) {
+        // sets create simple lists with multiple entries removed
+        var movieSet = new Set();
+        var podcastSet = new Set();
+        var botSet = new Set();
+        var bitSet = new Set();
+        var ratingSet = new Set();
+        var themeSet = new Set();
+        var yearSet = new Set();
+        var keywordSet = new Set();
+        var actorsSet = new Set();
+        var storySet = new Set();
+
+        entries.forEach(function(value) {
+          var entry = {
+            "episode": value.gsx$episodesearch.$t,
+            "episode_desc": value.gsx$episodesummary.$t,
+            "episode_title": value.gsx$episodetitle.$t,
+            "episode_url": value.gsx$episodelink.$t,
+            "movie": value.gsx$episodetitle.$t,
+            "imdb_url": value.gsx$movieimdblink.$t,
+            "sauna_url": value.gsx$movietrivia.$t,
+            "podcast": value.gsx$episodepodcast.$t,
+            "date": value.gsx$episodepublishdate.$t,
+            "rating": value.gsx$movieratingsystem.$t,
+            "bot": value.gsx$episodebotgorgon.$t,
+            "theme": value.gsx$episodethememonth.$t,
+            "episode_guest": value.gsx$episodeguest.$t,
+            "episode_live": value.gsx$episodeguest.$t,
+            "year": value.gsx$movieyear.$t,
+            "bot_variant": value.gsx$episodebotgorgonvariant.$t,
+            "watch": value.gsx$moviewheretowatch.$t,
+            // "guest": value.gsx$episodeguest.$t
+            "actors": value.gsx$moviestars.$t.split(", "),
+            "stories": value.gsx$episodestories.$t.split(", "),
+            "bits": value.gsx$episodebits.$t.split(", ")
+          };
+          movieSet.add(entry.movie);
+          podcastSet.add(entry.podcast);
+          botSet.add(entry.bot);
+          ratingSet.add(entry.rating);
+          themeSet.add(entry.theme);
+          yearSet.add(entry.year);
+          yearArray.push(entry.year);
+
+          //make a keyword set
+          keywordSet.add(entry.podcast);
+          keywordSet.add(entry.theme);
+          keywordSet.add(entry.bot);
+          keywordSet.add(entry.episode_guest);
+          //console.log(yearArray);
+          // var movieYearCount = yearArray.reduce((a, c) => (a[c] = (a[c] || 0) + 1, a), Object.create(null));
+          yearObj = yearArray.reduce((a, c) => (a[c] = (a[c] || 0) + 1, a), Object.create(null));
+          // console.log(yearObj);
+          // yearObj.push(movieYearCount);
+
+          // bits
+          entry.bits.forEach(function(t) {bitSet.add(t);});
+
+          // stories
+          entry.stories.forEach(function(t) {storySet.add(t);});
+
+          // actors
+          entry.actors.forEach(function(t) {
+            actorsSet.add(t);
+            actorsArray.push(t);
+          });
+
+          actorsObj = actorsArray.reduce((a, c) => (a[c] = (a[c] || 0) + 1, a), Object.create(null));
+          console.log(actorsObj);
+          episodeList.push(entry);
+
+        });
+
+        movieList = Array.from(movieSet);
+        movieList.sort();
+
+        podcastList = Array.from(podcastSet);
+        podcastList.sort();
+
+        botList = Array.from(botSet);
+        botList.sort();
+
+        ratingList = Array.from(ratingSet);
+        ratingList.sort();
+
+        themeList = Array.from(themeSet);
+        themeList.sort();
+
+        yearList = Array.from(yearSet);
+        yearList.sort();
+
+        keywordList = Array.from(keywordSet);
+        keywordList.sort();
+
+        actorsList = Array.from(actorsSet);
+        actorsList.sort();
+
+        bitList = Array.from(bitSet);
+        bitList.sort();
+
+        storyList = Array.from(storySet);
+        storyList.sort();
+
+        episodes.episodes = episodeList;
+        movies.movies = movieList;
+        podcasts.podcasts = podcastList;
+        bots.bots = botList;
+        ratings.ratings = ratingList;
+        themes.themes = themeList;
+        years.years = yearList;
+        bits.bits = bitList;
+        stories.stories = storyList;
+        // actors.actors = actorsList;
+        keywords.keywords = keywordList;
+        // tags.tags = tagList;
+      }; // end parseData
+
+      var movieThemes = {
+        'trueLies': [
+          'https://d2j1wkp1bavyfs.cloudfront.net/wp-content/uploads/2019/07/True-Lies-06.jpg',
+          'https://s30886.pcdn.co/wp-content/uploads/2019/09/true-lies-bill-paxton-cover.jpg',
+          'https://d13ezvd6yrslxm.cloudfront.net/wp/wp-content/images/truelies-schwarzenegger-jetcockpit.jpg'
+        ],
+        'trueLies2': [
+          'https://www.joblo.com/assets/images/joblo/news/2019/03/unpopular-truelies-arnold.jpeg',
+          'https://www.telegraph.co.uk/content/dam/films/2019/07/15/TELEMMGLPICT000203877904_trans_NvBQzQNjv4Bq8hfIEpCcEUN02iy1g1iS4YsmCQngSeg_KtVyRs6jBSE.jpeg',
+          'https://s30886.pcdn.co/wp-content/uploads/2019/09/1Tango.png'
+        ],
+        'avengers': [
+          'https://assets.3dtotal.com/avengers-final-battle.7epuud.image.2dv.jpg',
+          'https://static2.srcdn.com/wordpress/wp-content/uploads/2017/06/The-Avengers-Battle-of-New-York.jpg',
+          'https://images.indianexpress.com/2019/08/avengers-endgame-final-battle-1200.jpg'
+        ],
+        'avengers2': [
+          'https://4.bp.blogspot.com/-azsrJz2rSvs/W3LWDlSb97I/AAAAAAABsXY/M-lPnyvliwI0FZp50-Wew5wByan_A1ClgCLcBGAs/s1600/any000_3690_comp_mastercomp_v024_main_1019_copy.jpg',
+          'https://townsquare.media/site/442/files/2015/01/whedon-a4-630x420.jpg?w=980&q=75',
+          'https://www.gamersdecide.com/sites/default/files/authors/u141209/avengers-snow-attack-ageofultron-pointofgeeks.jpg'
+        ],
+        'topDog': [
+          'https://i.pinimg.com/originals/34/d2/fe/34d2fe0edf5481f3207662587434d947.jpg',
+          'https://d13ezvd6yrslxm.cloudfront.net/wp/wp-content/images/top-dog-03-g.jpg',
+          'https://1.bp.blogspot.com/-WtqmD6WMoME/TY42XgbOK0I/AAAAAAAAAMg/8HOoy5yjvbo/s1600/Screen%2Bshot%2B2011-03-26%2Bat%2B11.29.34%2BAM.png'
+        ],
+        'tuxedo': [
+          'https://cdn-2.tstatic.net/newsmaker/foto/bank/images/film-the-tuxedo.jpg',
+          'https://so-s.nflximg.net/soa3/741/1247665741.jpg',
+          'https://images2.fanpop.com/images/photos/7200000/Jennifer-in-The-Tuxedo-jennifer-love-hewitt-7262436-720-540.jpg'
+        ],
+        'wonderwoman': [
+          'https://i2.wp.com/metro.co.uk/wp-content/uploads/2018/01/wonder-woman-main.jpg?quality=90&strip=all&zoom=1&resize=480%2C319&ssl=1',
+          'https://s.yimg.com/ny/api/res/1.2/A95pnr6INfooqW_z3Tsh4Q--~A/YXBwaWQ9aGlnaGxhbmRlcjtzbT0xO3c9ODAw/http://media.zenfs.com/en/homerun/feed_manager_auto_publish_494/c59c6de05d55e661cb86513fee745aa4',
+          'https://img.cinemablend.com/filter:scale/quill/6/a/8/4/4/b/6a844bd834b590c0849309a4f676d493660b9b90.jpg?mw=600'
+        ],
+        'batmanSuperman': [
+          'https://pyxis.nymag.com/v1/imgs/fac/536/64258f008e7c7886c7a11be44f05f0b410-24-batman-superman-fight.2x.h473.w710.jpg',
+          'https://img.cinemablend.com/filter:scale/quill/d/2/9/a/d/0/d29ad0d4454473fcec1d38e367832f92b88e7ce5.jpg?mw=600',
+          'https://www.gannett-cdn.com/-mm-/761b41c6b57fab66b7dd3c44fdd82e8cecfa1b06/c=310-0-2091-1006/local/-/media/2016/03/21/DetroitFreePress/DetroitFreePress/635941756438912981-BVS-FP-0588.jpg'
+        ],
+        'doubleTeam': [
+          'https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/double-team-1997-dennis-rodman-y-jean-claude-van-damme-jpg-1557240177.jpg?crop=0.813xw:1.00xh;0.176xw,0&resize=480:*',
+          'https://images.squarespace-cdn.com/content/583c906ebe659429d1106265/1519127093289-0LG48X4YFV1I5Z5B4UTB/double_team.jpg?content-type=image%2Fjpeg',
+          'https://a.ltrbxd.com/resized/sm/upload/zy/i3/br/uq/double-team-1200-1200-675-675-crop-000000.jpg?k=8ebb9bb24b'
+        ],
+        'gulliversTravels': [
+          'https://m.media-amazon.com/images/M/MV5BYWRiNWQ2ODItZmVkMi00MWZlLTljYTQtZDMwYzhiMWNhN2RlL2ltYWdlL2ltYWdlXkEyXkFqcGdeQXVyMzYyMzU2OA@@._V1_.jpg',
+          'https://www.shared.com/content/images/2017/10/4-52.jpg',
+          'https://cinegrenier.files.wordpress.com/2011/03/photo-les-voyages-de-gulliver-gulliver-s-travels-1996-2.jpg'
+        ],
+        'kinderCop': [
+          'https://cdn.flickeringmyth.com/wp-content/uploads/2019/03/Three-Reasons_-Kindergarten-Cop-1-17-screenshot-600x338.png',
+          'https://www.thewrap.com/wp-content/uploads/2015/06/Kindergarten-Cop-618x400.jpg',
+          'https://media.spiked-online.com/website/images/2020/08/05131144/arnie-1160x653.jpg'
+        ],
+        'trainor': [
+          'https://tribecafilm-production.s3.amazonaws.com/uploads/article/header_marquee/4081/large_lead-mary.jpg',
+          'https://ilarge.lisimg.com/image/11959624/960full-romancing-the-stone-screenshot.jpg',
+          // 'https://perezhilton.com/wp-content/uploads/2015/06/mary-ellen-trainor.jpg',
+          'https://iv1.lisimg.com/image/9096072/720full-mary-ellen-trainor.jpg'
+
+        ],
+        'grandmaster': [
+          'https://images.indianexpress.com/2018/02/jeffoldblumragnarok-759.jpg',
+          'https://www.themarysue.com/wp-content/uploads/2018/02/Thor-Ragnarok-Goldblum.jpg',
+          'https://www.geekgirlauthority.com/wp-content/uploads/2018/02/thor-ragnarok.jpg'
+        ]
+      }
+
+      var images = [
+        'https://d2j1wkp1bavyfs.cloudfront.net/wp-content/uploads/2019/07/True-Lies-06.jpg',
+        'https://www.telegraph.co.uk/content/dam/films/2019/07/15/TELEMMGLPICT000203877904_trans_NvBQzQNjv4Bq8hfIEpCcEUN02iy1g1iS4YsmCQngSeg_KtVyRs6jBSE.jpeg',
+        'https://static2.srcdn.com/wordpress/wp-content/uploads/2017/06/The-Avengers-Battle-of-New-York.jpg',
+        'https://i.ytimg.com/vi/xrKJES3tntY/maxresdefault.jpg',
+        'https://assets.3dtotal.com/avengers-final-battle.7epuud.image.2dv.jpg',
+        'https://s30886.pcdn.co/wp-content/uploads/2019/09/true-lies-bill-paxton-cover.jpg',
+        'https://i0.wp.com/batman-news.com/wp-content/uploads/2018/02/Batman-Superman-Bromance-Justice-League.jpg?fit=1399%2C788&quality=80&strip=info&ssl=1',
+        'https://images.indianexpress.com/2019/08/avengers-endgame-final-battle-1200.jpg',
+        'https://www.wearethemighty.com/app/uploads/legacy/assets.rbl.ms/21063302/origin.jpg',
+        'https://4.bp.blogspot.com/-azsrJz2rSvs/W3LWDlSb97I/AAAAAAABsXY/M-lPnyvliwI0FZp50-Wew5wByan_A1ClgCLcBGAs/s1600/any000_3690_comp_mastercomp_v024_main_1019_copy.jpg',
+        'https://cdn.onebauer.media/one/empire-tmdb/films/10771/images/okgnxsMENxsU026HzXiPZTJUUce.jpg?quality=50&width=1800&ratio=16-9&resizeStyle=aspectfill&format=jpg'
+      ]
+      var themeOptions = Object.keys(movieThemes);
+      var randomTheme = themeOptions[Math.random() * themeOptions.length | 0];
+      var randomImg = images[Math.random() * images.length | 0];
+      var url = randomImg;
+      var hero = document.querySelector('.hero-image');
+      //hero.src = url;
+      // hero.appendChild(new Image()).src = url;
+      //console.log('random theme = ' + randomTheme );
+      var x = movieThemes[randomTheme];
+      //console.log("length of array is " + x.length);
+      var body = document.querySelector('body');
+
+      //random number function
+      function getRandomInt(max) {
+        return Math.floor(Math.random() * Math.floor(max));
+      }
+
+      body.classList.add("layout__" + getRandomInt(3) );
+
+      function makeImages(){
+        for (var i = 0, j = x.length; i < j; i++) {
+            var img = document.createElement('img');
+            img.src = x[i]; // img[i] refers to the current URL.
+            body.appendChild(img);
+        }
+      };
+      makeImages();
+  </script>
+</body>
+</html>
