@@ -4,12 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>ActionBoyz Data</title>
+  <title>Action Boyz episodes</title>
   <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.0/axios.min.js"></script>
 
   <style>
+    :root{
+      --bg-color: #121212; /* dark gray */
+      --text-color: #eee; /* off white */
+      --link-color: #809fff; /* light gray-blue */
+      --button-color: rgba(50,50,50,0.9); /* dark gray */
+    }
     body {
+      background: var(--bg-color);
+      color: var(--text-color);
       font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif;
       margin: 0;
       padding: 0;
@@ -18,30 +26,42 @@
       max-width: 1400px;
       margin: 0 auto;
       overflow: hidden;
-      padding: 2rem;
+      padding: .5rem;
+    }
+    @media screen and (min-width: 900px) {
+      main{ padding: 1.5rem; }
+    }
+    aside{
+      display: grid;
+      grid-gap: .7rem;
     }
     #content{
-      display: grid;
-      grid-gap: 2rem;
-      grid-template-columns: auto 60%;
+
     }
+    @media screen and (min-width: 900px) {
+      #content{
+        display: grid;
+        grid-gap: 2rem;
+        grid-template-columns: auto 60%;
+      }
+     }
     #search {
       border: solid 2px black;
-      width: 70%;
       padding: .5rem;
       font-size:  1rem;
       margin-bottom: 1rem;
+      width: 100%;
     }
-
     button {
-      background: white;
+      background: var(--bg-color);
+      color: var(--text-color);
       border: none;
       font-size: 1rem;
       padding: .5rem;
       transition: all .4s ease;
     }
     button:hover{
-      background: gold;
+      background: var(--button-color);
       cursor: pointer;
     }
     .filter {
@@ -49,23 +69,9 @@
       margin: 0 .5rem .5rem 0;
     }
     .reset {
-      background: white;
+      background: var(--bg-color);
       border: solid 2px black;
-      margin: 2rem 0;
       padding: .5rem 1rem;
-    }
-    .hero {
-      display: grid;
-      grid-template-columns: 1fr;
-      grid-template-rows: 1fr;
-      margin-bottom: 1rem;
-    }
-    .hero h1, .hero-image {
-      grid-row: 1;
-      grid-column: 1;
-    }
-    .hero-image {
-      max-width: 100%;
     }
     ul {
       display: flex;
@@ -75,8 +81,8 @@
       padding: 0;
     }
     h1 {
-      text-shadow: 4px 4px red;
-      font-size: 4rem;
+      text-shadow: 4px 4px var(--link-color);
+      font-size: 2.5rem;
       margin: 0 0 1rem;;
       line-height: 1;
     }
@@ -84,9 +90,8 @@
       margin: 0;
     }
     h2.result_count {
-      background: white;
+      background: var(--bg-color);
       padding: .5rem;
-      margin-bottom:  2rem;
       width: fit-content;
       width: -moz-fit-content;
     }
@@ -96,31 +101,46 @@
     .episode > * {
       margin: 0;
       padding: .25rem .5rem;
-      background: white;
+      background: var(--bg-color);
       width: fit-content;
       width: -moz-fit-content;
     }
     img{
       position: fixed;
       z-index: -1;
-      max-width: 700px;
+      max-width: 250px;
       display: block;
     }
+    @media screen and (min-width: 750px) {
+      img {
+        max-width: 400px;
+      }
+    }
     img:nth-of-type(1){
-      top: 30%;
+      top: 40%;
       left: 0;
+    }
+    @media screen and (min-width: 750px) {
+      img:nth-of-type(1){
+        top: 35%;
+      }
     }
     img:nth-of-type(2){
       top: 0;
       right: 0;
     }
     img:nth-of-type(3){
-      top: 75%;
-      right: 20%;
+      bottom: -5%;
+      right: 0;
+    }
+    @media screen and (min-width: 750px) {
+      img:nth-of-type(3){
+        bottom: 0;
+      }
     }
     aside h2, aside h3 {
       margin: 0;
-      background: white;
+      background: var(--bg-color);
       width: fit-content;
       width: -moz-fit-content;
       padding: .25rem .5rem;
@@ -129,9 +149,14 @@
       margin-bottom: .5rem;
     }
     aside > div {
-      margin-bottom: 2rem;
-      padding: .5rem .5rem 0;
-      border: solid 2px black;
+
+
+    }
+    @media screen and (min-width: 900px) {
+      aside > div{
+        padding: .5rem .5rem 0;
+        border: solid 2px black;
+      }
     }
     button[data=""],
     .bit[data=""] {
@@ -146,9 +171,9 @@
       margin-right: .5rem;
     }
     span.bit {
-      background:  gray;
+      background:  var(--button-color);;
       border-radius:  6px;
-      color:  white;
+      color:  var(--text-color);
       display:  block;
       font-size: .8rem;
       margin: 0 .35rem .2rem 0;
@@ -157,6 +182,9 @@
     .episode__bits {
       display:  flex;
       flex-wrap:  wrap;
+    }
+    a {
+      color: var(--link-color);
     }
     #movies, #yearCount{display: none;}
 
@@ -249,14 +277,14 @@
             </ul>
           </div>
 
-          <div id="stories">
+          <!-- <div id="stories">
             <h3>Stories</h3>
             <ul>
               <li class="menu-item" v-for="story in stories" >
                 <button class="filter" v-on:click="selectStory" :data="story" >{{ story }}</button>
               </li>
             </ul>
-          </div>
+          </div> -->
 
           <div id="themes">
             <h3>Theme month</h3>
@@ -276,14 +304,14 @@
             </ul>
           </div>
 
-          <div id="keywords">
+          <!-- <div id="keywords">
             <h3>Keywords</h3>
             <ul>
               <li class="menu-item" v-for="keyword in keywords">
                 <button class="filter" v-on:click="selectKeyword" :data="keyword">{{ keyword }}</button>
               </li>
             </ul>
-          </div>
+          </div> -->
 
         </aside><!-- sidebar -->
 
@@ -468,43 +496,43 @@
         }
       });
 
-      var stories = new Vue({
-        el: '#stories',
-        data: {
-          stories: storyList
-        },
-        methods: {
-          selectStory: function(event) {
-            var selected = [];
-            var story = event.target.getAttribute('data');
-            episodeList.forEach(function(value) {
-              if (value.stories.includes(story)) {
-                selected.push(value);
-              }
-            });
-            episodes.episodes = selected;
-          }
-        }
-      });
+      // var stories = new Vue({
+      //   el: '#stories',
+      //   data: {
+      //     stories: storyList
+      //   },
+      //   methods: {
+      //     selectStory: function(event) {
+      //       var selected = [];
+      //       var story = event.target.getAttribute('data');
+      //       episodeList.forEach(function(value) {
+      //         if (value.stories.includes(story)) {
+      //           selected.push(value);
+      //         }
+      //       });
+      //       episodes.episodes = selected;
+      //     }
+      //   }
+      // });
 
-      var keywords = new Vue({
-        el: '#keywords',
-        data: {
-          keywords: keywordList
-        },
-        methods: {
-          selectKeyword: function(event) {
-            var selected = [];
-            var keyword = event.target.getAttribute('data');
-            episodeList.forEach(function(value) {
-              if (value.episode == keyword) {
-                selected.push(value);
-              }
-            });
-            episodes.episodes = selected;
-          }
-        }
-      });
+      // var keywords = new Vue({
+      //   el: '#keywords',
+      //   data: {
+      //     keywords: keywordList
+      //   },
+      //   methods: {
+      //     selectKeyword: function(event) {
+      //       var selected = [];
+      //       var keyword = event.target.getAttribute('data');
+      //       episodeList.forEach(function(value) {
+      //         if (value.episode == keyword) {
+      //           selected.push(value);
+      //         }
+      //       });
+      //       episodes.episodes = selected;
+      //     }
+      //   }
+      // });
 
       var themes = new Vue({
         el: '#themes',
