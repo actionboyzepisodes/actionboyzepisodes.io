@@ -2,18 +2,27 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Action Boyz episodes</title>
-  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+  <meta name="description" content="A searchable list of Action Boyz podcast episodes.">
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script> -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.0/axios.min.js"></script>
 
   <style>
     :root{
-      --bg-color: #121212; /* dark gray */
-      --text-color: #eee; /* off white */
-      --link-color: #809fff; /* light gray-blue */
-      --button-color: rgba(50,50,50,0.9); /* dark gray */
+      /* Dark  mode */
+      --bg-color--dark: #121212; /* dark gray */
+      --text-color--dark: #eee; /* off white */
+      --link-color--dark: #809fff; /* light gray-blue */
+      --button-color--dark: rgba(50,50,50,0.9); /* dark gray */
+      /* Light  mode */
+      --bg-color: #eee; /* dark gray */
+      --text-color: #121212; /* off white */
+      --link-color: blue; /* light gray-blue */
+      --button-color: rgba(210,210,210,1); /* dark gray */
     }
     body {
       background: var(--bg-color);
@@ -37,7 +46,7 @@
     aside {
       display: none;
     }
-    @media screen and (min-width: 900px) {
+    @media screen and (min-width: 750px) {
       aside {
         align-content: baseline;
         display: grid;
@@ -48,7 +57,7 @@
         border: solid 2px black;
       }
     }
-    @media screen and (min-width: 900px) {
+    @media screen and (min-width: 750px) {
       #content{
         display: grid;
         grid-gap: 2rem;
@@ -69,6 +78,7 @@
       font-size: 1rem;
       padding: .5rem;
       transition: all .4s ease;
+      text-align: left;
     }
     button:hover{
       background: var(--button-color);
@@ -82,6 +92,7 @@
       background: var(--bg-color);
       border: solid 2px black;
       padding: .5rem 1rem;
+      text-align: center;
     }
     ul {
       display: flex;
@@ -106,6 +117,7 @@
       width: -moz-fit-content;
     }
     #episodes {
+      align-content: baseline;
       display: grid;
       grid-gap: 1.25rem;
     }
@@ -126,25 +138,20 @@
       max-height: 4.4rem;
       overflow: hidden;
     }
+    @media screen and (min-width: 750px) {
+      p{
+        max-height: unset;
+      }
+    }
     img{
       position: fixed;
       z-index: -1;
       max-width: 250px;
       display: block;
     }
-    @media screen and (min-width: 750px) {
-      img {
-        max-width: 400px;
-      }
-    }
     img:nth-of-type(1){
       top: 40%;
       left: 0;
-    }
-    @media screen and (min-width: 750px) {
-      img:nth-of-type(1){
-        top: 35%;
-      }
     }
     img:nth-of-type(2){
       top: 0;
@@ -154,11 +161,29 @@
       bottom: -5%;
       right: 0;
     }
+
     @media screen and (min-width: 750px) {
-      img:nth-of-type(3){
+      img {
+        max-width: 400px;
+      }
+      img:nth-of-type(1) {
+        top: 35%;
+      }
+      img:nth-of-type(3) {
         bottom: 0;
       }
     }
+    @media screen and (min-width: 900px) {
+      img {
+        max-width: 500px;
+      }
+      img:nth-of-type(3) {
+        bottom: unset;
+        right: 20%;
+        top: 75%;
+      }
+    }
+
     aside h2, aside h3 {
       margin: 0;
       background: var(--bg-color);
@@ -204,8 +229,6 @@
 
 <body>
   <main>
-
-
       <div id="abz">
       </div>
 
@@ -228,11 +251,11 @@
 
           <h2>Filters</h2>
 
-          <ul id="clicked">
+          <!-- <ul id="clicked">
             <li class="menu-item" v-for="clicked in clicked">
               <button class="filter"  v-on:click="removeFilter" :data="clicked">{{ clicked }}</button>
             </li>
-          </ul>
+          </ul> -->
 
           <button id="reset-filter" class="reset" v-on:click="reset">&#9746; Reset Filters</button>
 
@@ -364,6 +387,7 @@
     </main>
 
   <script>
+    console.log("Wow, you must be some kind of MIT janitor to be looking in here");
     var menu = document.querySelector('.menu');
 
     var gsheet_url = "https://spreadsheets.google.com/feeds/list/1O1T89pzspOe6aY-kOZMMurq_LQBT6rdUIJeKGx6lbWs/1/public/values?alt=json"
@@ -426,7 +450,7 @@
 
             var filtered = [];
             query = query.toLowerCase();
-            console.log(query);
+            //console.log(query);
 
             // Search in quote, author and source
             episodeList.forEach(function(value) {
@@ -454,20 +478,20 @@
         }
       });
 
-      var clicked = new Vue({
-        el: '#clicked',
-        data: {
-          clicked: clickedList
-        },
-        methods: {
-          removeFilter: function(event) {
-            var item = event.target.getAttribute('data');
-            console.log("clicked list: " + clicked.clicked);
-            const index = clicked.clicked.indexOf(item);
-            if (index > -1) { clicked.clicked.splice(index, 1) }
-          }
-        }
-      });
+      // var clicked = new Vue({
+      //   el: '#clicked',
+      //   data: {
+      //     clicked: clickedList
+      //   },
+      //   methods: {
+      //     removeFilter: function(event) {
+      //       var item = event.target.getAttribute('data');
+      //       console.log("clicked list: " + clicked.clicked);
+      //       const index = clicked.clicked.indexOf(item);
+      //       if (index > -1) { clicked.clicked.splice(index, 1) }
+      //     }
+      //   }
+      // });
 
       // var authors = new Vue({
       var movies = new Vue({
@@ -612,7 +636,7 @@
           selectBot: function(event) {
             var selected = [];
             var bot = event.target.getAttribute('data');
-            clickedList.push(bot);
+            //clickedList.push(bot);
             episodeList.forEach(function(value) {
               if (value.bot == bot) {
                 selected.push(value);
@@ -740,7 +764,7 @@
           });
 
           actorsObj = actorsArray.reduce((a, c) => (a[c] = (a[c] || 0) + 1, a), Object.create(null));
-          console.log(actorsObj);
+          //console.log(actorsObj);
           episodeList.push(entry);
 
         });
